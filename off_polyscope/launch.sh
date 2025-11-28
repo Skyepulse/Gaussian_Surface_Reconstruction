@@ -1,3 +1,3 @@
 echo "Launching off_polyscope..."
-./build/off_viewer ../output/lego_game/lego_colored.off
+./build/off_viewer ../Meshes/triangle/test_game.off
 echo "off_polyscope session ended."
