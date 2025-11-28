@@ -1,0 +1,7 @@
+/off_polyscope/build/
+/Meshes/sugar/
+*.ply
+*.obj
+*.off
+/.vscode/
+/.vs/
