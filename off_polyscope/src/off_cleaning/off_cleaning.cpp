@@ -12,6 +12,11 @@
 
 using namespace std;
 
+// M_PI may not be defined in some compilers
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 //=============================== triangle area =============================//
 double triangle_area(const Eigen::Vector3d& a,
                             const Eigen::Vector3d& b,
@@ -24,56 +29,10 @@ double triangle_area(const Eigen::Vector3d& a,
     return 0.5 * cross_prod.norm();
 }
 
-//=============================== Mesh Load =============================//
-MeshData loadCOFF_TriangleSplatting(const string& path) 
-{
-  ifstream f(path);
-  if (!f.is_open()) throw runtime_error("Could not open file: " + path);
-
-  string header;
-  f >> header;
-  if (header != "COFF" && header != "OFF") {
-    throw runtime_error("Expected header COFF or OFF, got: " + header);
-  }
-
-  size_t nV = 0, nF = 0, nE = 0;
-  f >> nV >> nF >> nE;
-
-  MeshData md;
-  md.V.reserve(nV);
-  md.F.reserve(nF);
-  md.faceColor.reserve(nF);
-
-  // Read vertices
-  for (size_t i = 0; i < nV; ++i) {
-    double x, y, z;
-    f >> x >> y >> z;
-    md.V.emplace_back(x, y, z);
-  }
-
-  // Read faces + colors
-  for (size_t i = 0; i < nF; ++i) {
-    int n, v0, v1, v2;
-    int r, g, b, a = 255;
-
-    if (!(f >> n >> v0 >> v1 >> v2 >> r >> g >> b >> a)) {
-      throw runtime_error("Malformed COFF line at face " + to_string(i));
-    }
-
-    if (n != 3)
-      throw runtime_error("Non-triangle face encountered, expected '3' at face " + to_string(i));
-
-    md.F.emplace_back(v0, v1, v2);
-    md.faceColor.emplace_back(r / 255.0, g / 255.0, b / 255.0);
-  }
-
-  return md;
-}
-
 //=============================== Clean Mesh =============================//
-MeshData clean_mesh(const MeshData& md)
+mesh clean_mesh(const mesh& md)
 {
-    MeshData md_cleaned = md;
+    mesh md_cleaned = md;
 
     // Remove near-duplicate triangles
     md_cleaned = remove_near_duplicate_triangles(md_cleaned, 0.1, 15.0, 1e-1);
@@ -81,13 +40,14 @@ MeshData clean_mesh(const MeshData& md)
     return md_cleaned;
 }
 
-MeshData remove_near_duplicate_triangles(
-    const MeshData& md,
+//================================//
+mesh remove_near_duplicate_triangles(
+    const mesh& md,
     double eps_centroid = 1e-3,
     double eps_normal_deg = 10.0,
     double eps_area = 1e-6)
 {
-    MeshData out;
+    mesh out;
     out.V = md.V;
 
     int nF = md.F.size();
@@ -103,10 +63,10 @@ MeshData remove_near_duplicate_triangles(
     std::vector<TriInfo> info(nF);
 
     for (int i = 0; i < nF; i++) {
-        const auto& f = md.F[i];
-        Eigen::Vector3d v0 = md.V[f[0]];
-        Eigen::Vector3d v1 = md.V[f[1]];
-        Eigen::Vector3d v2 = md.V[f[2]];
+        const Eigen::Vector3i& f = md.F.row(i);
+        Eigen::Vector3d v0 = md.V.row(f[0]);
+        Eigen::Vector3d v1 = md.V.row(f[1]);
+        Eigen::Vector3d v2 = md.V.row(f[2]);
 
         Eigen::Vector3d c = (v0 + v1 + v2) / 3.0;
         Eigen::Vector3d n = (v1 - v0).cross(v2 - v0);
@@ -155,6 +115,7 @@ MeshData remove_near_duplicate_triangles(
     double cos_th = std::cos(rad);
 
     // Compare triangles inside each voxel
+    size_t removed_count = 0;
     for (auto& bucket : grid) {
         auto& faces = bucket.second;
 
@@ -180,15 +141,20 @@ MeshData remove_near_duplicate_triangles(
 
                 // These triangles are near-duplicates
                 removed[fj] = true;
+                removed_count++;
             }
         }
     }
 
+    out.F = Eigen::MatrixXi(nF - removed_count, 3);
+    out.faceColor = Eigen::MatrixXd(nF - removed_count, 3);
+
     // Build output
     for (int i = 0; i < nF; i++) {
         if (!removed[i]) {
-            out.F.push_back(md.F[i]);
-            out.faceColor.push_back(md.faceColor[i]);
+            out.F.row(out.F.rows() - removed_count) = md.F.row(i);
+            out.faceColor.row(out.faceColor.rows() - removed_count) = md.faceColor.row(i);
+            removed_count--;
         }
     }
 
@@ -213,20 +179,27 @@ double triangle_aspect_ratio(const Eigen::Vector3d& a,
     return longest / shortest;
 }
 
-MeshData remove_high_aspect(const MeshData& md, double threshold = 20.0)
+//================================//
+mesh remove_high_aspect(const mesh& md, double threshold = 20.0)
 {
-    MeshData out;
+    mesh out;
     out.V = md.V;
 
-    for (size_t i = 0; i < md.F.size(); ++i) {
-        auto f = md.F[i];
+    for (size_t i = 0; i < md.F.rows(); ++i) {
+        Eigen::Vector3i f = md.F.row(i);
         double ar = triangle_aspect_ratio(
-            md.V[f[0]], md.V[f[1]], md.V[f[2]]
+            md.V.row(f[0]), md.V.row(f[1]), md.V.row(f[2])
         );
 
+        out.F = Eigen::MatrixXi(0, 3);
+        out.faceColor = Eigen::MatrixXd(0, 3);
+
         if (ar < threshold) {
-            out.F.push_back(f);
-            out.faceColor.push_back(md.faceColor[i]);
+            out.F.conservativeResize(out.F.rows() + 1, 3);
+            out.F.row(out.F.rows() - 1) = f;
+
+            out.faceColor.conservativeResize(out.faceColor.rows() + 1, 3);
+            out.faceColor.row(out.faceColor.rows() - 1) = md.faceColor.row(i);
         }
     }
     return out;
