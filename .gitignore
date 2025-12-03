@@ -1,3 +1,7 @@
 /off_polyscope/build/
 /.vscode/
 /.vs/
+# Ignore all files with .blend and then a number in it,
+# do not ignore .blend files themselves
+*.blend[0-9]*
+!.blend
