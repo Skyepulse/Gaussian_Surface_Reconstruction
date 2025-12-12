@@ -39,12 +39,50 @@ set(SRC_FILES
   src/mesh.hpp
 )
 
+set(UNIT_SRC_FILES
+  src/unitTests.cpp
+  src/off_cleaning/off_cleaning.cpp
+  src/off_cleaning/off_cleaning.h
+  src/mesh_load/mesh_load.cpp
+  src/mesh_load/mesh_load.h
+  src/mesh.cpp
+  src/mesh.hpp
+)
+
 add_executable(off_viewer ${SRC_FILES})
 target_link_libraries(off_viewer
   PRIVATE
     polyscope
     igl::core
     igl::stb
+)
+
+# GoogleTest
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        v1.17.0
+)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+enable_testing()
+add_executable(unit_tests ${UNIT_SRC_FILES} )
+target_link_libraries(unit_tests
+  PRIVATE
+    polyscope
+    igl::core
+    igl::stb
+    GTest::gtest
+)
+
+target_compile_definitions(unit_tests
+  PRIVATE 
+  PROJECT_SOURCE_DIR="${PROJECT_SOURCE_DIR}"
+)
+
+add_test(NAME unit_tests
+    COMMAND unit_tests
 )
 
 # On Linux they are sometimes required

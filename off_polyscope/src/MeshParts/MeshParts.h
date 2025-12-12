@@ -35,6 +35,8 @@ namespace MeshParts
 
     bool is_boundary = false;
 
+    double voronoi_area = 0.;
+
     std::vector<PrimalFacePtr> getOneRingFaces() const
     {
       std::vector<PrimalFacePtr> faces;
@@ -92,6 +94,8 @@ namespace MeshParts
     HalfEdge(int index) : index(index) {};
 
     bool boundary = false;
+
+    double cotangentOfOppAngle = 0.0;
 
     int index;
     int sign_edge = -1;
@@ -259,6 +263,10 @@ namespace MeshParts
     std::vector<std::weak_ptr<HalfEdge>> hedges_face;
 
     bool is_boundary = false;
+    bool is_obtuse = false;
+
+    float area = 0.0f;
+    std::vector<float> angles;
 
     std::vector<VertexPtr> getVertices() const
     {

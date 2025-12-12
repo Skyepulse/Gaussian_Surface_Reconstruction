@@ -19,16 +19,23 @@ using namespace std;
 void meshLoadCOFF(mesh& m)
 {
     string path = m.file_path;
+    cout << "Loading COFF mesh from file: " << path << endl;
 
     // Check File Exists
     ifstream f(path);
     if (!f.is_open()) 
+    {
+        std::cerr << "[meshLoadCOFF] Path does not exist: " << path << std::endl;
         throw runtime_error("[meshLoadCOFF] Path does not exist: " + path);
+    }
 
     string header;
     f >> header;
     if (header != "COFF" && header != "OFF")
-        throw runtime_error("[meshLoadCOFF] Expected header COFF or OFF, got: " + header);
+    {
+        throw runtime_error("[meshLoadCOFF] Invalid COFF header: " + header);
+        std::cerr << "[meshLoadCOFF] Invalid COFF header: " << header << std::endl;
+    }
 
     size_t nV = 0, nF = 0, nE = 0;
     f >> nV >> nF >> nE;
