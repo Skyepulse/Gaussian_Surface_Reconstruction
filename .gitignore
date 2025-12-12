@@ -5,3 +5,4 @@
 # do not ignore .blend files themselves
 *.blend[0-9]*
 !.blend
+tmp/
