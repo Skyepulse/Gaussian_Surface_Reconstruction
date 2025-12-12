@@ -44,7 +44,7 @@ decreases exponentially  $p$ as the position $\mu$ the position of the gaussian 
 The gaussian closest to a pixel is the one who contributes more, so adapt the formula of the sum to contain only one gaussian, where the gaussian is the one with the largest contribution to the pixel.
 
 
-To get the gaussians to lay flat : get the contribution to be equal to $\frac{1}{s_g^2} < p-\mu_g, n_g >^2$ where $\n_g$ is the direction of the axis of the smallest scaling factor of the gaussian. (supposing they are flat on x, y or z), so $n_g$ is $x , y , z$.
+To get the gaussians to lay flat : get the contribution to be equal to $\frac{1}{s_g^2} < p-\mu_g, n_g >^2$ where $n_g$ is the direction of the axis of the smallest scaling factor of the gaussian. (supposing they are flat on x, y or z), so $n_g$ is $x , y , z$.
 
 Density is then approximated by : $d(p) = exp(-\frac{1}{2 s_g^2}) < p-\mu_g, n_g >^2$  where $g$ is a gaussian. Furthermore, switching loss to SDF rather than density increases the alignment of gaussians.
 
@@ -65,6 +65,6 @@ Problem is using points on the corect level set : use the depth maps. For every 
 
 Bind gaussians to mesh triangle and optimize mesh and gaussians together : mesh editable, gaussians provide good rendering. One gaussian per triangle. Reduces the learnable parameters on the gaussians, lose one axis of rotation to keep them flat on the surgace.
 ### MILo
-...
+
 
 ## Metrics
