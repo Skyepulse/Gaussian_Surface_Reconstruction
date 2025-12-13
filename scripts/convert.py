@@ -124,3 +124,6 @@ if(args.resize):
             exit(exit_code)
 
 print("Done.")
+
+# call script colmap_bin.py to convert txt to bin
+bin_converter_cmd = f'python3 //scripts/colmap_bin.py -input_path "{args.source_path}/sparse/0"'
