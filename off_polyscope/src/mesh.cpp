@@ -8,6 +8,7 @@
 #include <igl/boundary_facets.h>
 #include <igl/is_edge_manifold.h>
 #include <igl/facet_components.h>
+#include <cfloat>
 
 #define PIV 3.141592653589793
 
