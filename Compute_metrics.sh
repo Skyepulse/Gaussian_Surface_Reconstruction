@@ -15,10 +15,10 @@ Output_Folder="$2"
 # -----------------------------
 # Check executable existence
 # -----------------------------
-EXEC="./off_polyscope/build/Debug/off_viewer"
+EXEC="./off_polyscope/build/off_viewer"
 
 if [ ! -x "$EXEC" ]; then
-    echo "Error: Executable off_viewer not found in ./off_polyscope/build/Debug/"
+    echo "Error: Executable off_viewer not found in ./off_polyscope/build/off_viewer"
     exit 1
 fi
 

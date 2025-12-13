@@ -284,7 +284,6 @@ void mesh::buildHalfEdgeStructure()
 {
     map<pair<int, int>, HalfEdgePtr> built_hedges;
     metrics.num_unique_edges = 0;
-
     int k = F.rows();
     for (int i = 0; i < k; i++)
     {
@@ -455,19 +454,36 @@ void mesh::computeCotangentMatrix()
 void mesh::buildMetrics()
 {
     // Create folder given output_metrics_file path
+    std::cout << "Output metrics folder: " << output_metrics_file << std::endl;
     std::filesystem::path output_path(output_metrics_file);
-    std::filesystem::create_directories(output_path.parent_path());
+    std::filesystem::create_directories(output_path);
 
+    // Create metrics.txt file
+    std::ofstream metrics_file(output_metrics_file + "/metrics.txt");
+    if (!metrics_file.is_open())
+    {
+        std::cerr << "[MESH] Could not create metrics file at: " << output_metrics_file << std::endl;
+        throw std::runtime_error("[MESH] Could not create metrics file at: " + output_metrics_file);
+    }
+    
     Eigen::MatrixXi E;
     Eigen::VectorXi EMAP;
 
     // Basic Info
+    /*
     cout << "Mesh Metrics:" << endl;
     cout << "  Number of vertices: " << metrics.num_vertices << endl;
     cout << "  Number of faces: " << metrics.num_faces << endl;
     cout << "  Number of unique edges: " << metrics.num_unique_edges << endl;
     metrics.euler_characteristic = static_cast<int>(metrics.num_vertices) - static_cast<int>(metrics.num_unique_edges) + static_cast<int>(metrics.num_faces);
     cout << "  Euler characteristic: " << metrics.euler_characteristic << endl;
+    */
+    metrics_file << "Mesh Metrics:" << std::endl;
+    metrics_file << "  Number of vertices: " << metrics.num_vertices << std::endl;
+    metrics_file << "  Number of faces: " << metrics.num_faces << std::endl;
+    metrics_file << "  Number of unique edges: " << metrics.num_unique_edges << std::endl;
+    metrics.euler_characteristic = static_cast<int>(metrics.num_vertices) - static_cast<int>(metrics.num_unique_edges) + static_cast<int>(metrics.num_faces);
+    metrics_file << "  Euler characteristic: " << metrics.euler_characteristic << std::endl;
 
     // Boundaries
     metrics.loops.clear();
@@ -500,22 +516,37 @@ void mesh::buildMetrics()
         metrics.min_loop_size = 0;
     }
 
+    /*
     cout << "  Number of boundary loops: " << metrics.boundary_loops << endl;
     cout << "  Number of boundary edges: " << metrics.boundary_edges << endl;
     cout << "  Average loop size: " << metrics.average_loop_size << endl;
     cout << "  Max loop size: " << metrics.max_loop_size << endl;
     cout << "  Min loop size: " << metrics.min_loop_size << endl;
+    */
+    metrics_file << "  Number of boundary loops: " << metrics.boundary_loops << std::endl;
+    metrics_file << "  Number of boundary edges: " << metrics.boundary_edges << std::endl;
+    metrics_file << "  Average loop size: " << metrics.average_loop_size << std::endl;
+    metrics_file << "  Max loop size: " << metrics.max_loop_size << std::endl;
+    metrics_file << "  Min loop size: " << metrics.min_loop_size << std::endl;
+
+    metrics_file << "LOOP DETAILS:" << std::endl;
+    for (size_t i = 0; i < metrics.loops.size(); i++)
+    {
+        metrics_file << "  Loop " << i << " size: " << metrics.loops[i].size() << std::endl;
+    }
 
     // Ratios
     metrics.edge_boundary_ratio = static_cast<double>(metrics.boundary_edges) / metrics.num_unique_edges;
-    cout << "  Edge boundary ratio: " << metrics.edge_boundary_ratio << endl;
+    // cout << "  Edge boundary ratio: " << metrics.edge_boundary_ratio << endl;
+    metrics_file << "  Edge boundary ratio: " << metrics.edge_boundary_ratio << std::endl;
 
     // Connected Components
     Eigen::VectorXi CC;
     int num_cc = igl::facet_components(F, CC);
 
     metrics.num_connected_components = num_cc;
-    cout << "  Number of connected components: " << metrics.num_connected_components << endl;
+    // cout << "  Number of connected components: " << metrics.num_connected_components << endl;
+    metrics_file << "  Number of connected components: " << metrics.num_connected_components << std::endl;
 
     metrics.component_sizes.resize(num_cc, 0);
 
@@ -525,22 +556,35 @@ void mesh::buildMetrics()
     {
         int comp_id = CC[i];
         metrics.component_sizes[comp_id]++;
+    }
+    for (int s : metrics.component_sizes)
+    {
+        if (s == 0) continue;
 
-        if (metrics.component_sizes[comp_id] > maxS)
-            maxS = metrics.component_sizes[comp_id];
-
-        if (metrics.component_sizes[comp_id] < minS)
-            minS = metrics.component_sizes[comp_id];
+        if (s > maxS) maxS = s;
+        if (s < minS) minS = s;
     }
     metrics.largest_component_size = maxS;
     metrics.smallest_component_size = minS;
 
     metrics.average_component_size = static_cast<double>(metrics.num_faces) / metrics.num_connected_components;
+    /*
     cout << "  Largest component size (faces): " << metrics.largest_component_size << endl;
     cout << "  Smallest component size (faces): " << metrics.smallest_component_size << endl;
     cout << "  Average component size (faces): " << metrics.average_component_size << endl;
+    */
+    metrics_file << "  Largest component size (faces): " << metrics.largest_component_size << std::endl;
+    metrics_file << "  Smallest component size (faces): " << metrics.smallest_component_size << std::endl;
+    metrics_file << "  Average component size (faces): " << metrics.average_component_size << std::endl;
+
+    metrics_file << "COMPONENT SIZES:" << std::endl;
+    for (size_t i = 0; i < metrics.component_sizes.size(); i++)
+    {
+        metrics_file << "  Component " << i << " size: " << metrics.component_sizes[i] << std::endl;
+    }
 
     // Face area and angles degeneracy
+    /*
     cout << "  Minimum face area: " << metrics.min_face_area << endl;
     cout << "  Maximum face area: " << metrics.max_face_area << endl;
     cout << "  Average face area: " << metrics.average_face_area << endl;
@@ -548,4 +592,14 @@ void mesh::buildMetrics()
     cout << "  Area degeneracy ratio: " << metrics.area_degeneracy_ratio << endl;
     cout << "  5th percentile minimum angle: " << metrics.min_angle_p5 << endl;
     cout << "  Maximum angle: " << metrics.maximum_angle << endl;
+    */
+    metrics_file << "  Minimum face area: " << metrics.min_face_area << std::endl;
+    metrics_file << "  Maximum face area: " << metrics.max_face_area << std::endl;
+    metrics_file << "  Average face area: " << metrics.average_face_area << std::endl;
+    metrics_file << "  Number of degenerate faces: " << metrics.num_degenerate_faces << std::endl;
+    metrics_file << "  Area degeneracy ratio: " << metrics.area_degeneracy_ratio << std::endl;
+    metrics_file << "  5th percentile minimum angle: " << metrics.min_angle_p5 << std::endl;
+    metrics_file << "  Maximum angle: " << metrics.maximum_angle << std::endl;
+
+    metrics_file.close();
 }

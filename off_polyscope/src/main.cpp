@@ -4,7 +4,6 @@
 #include <Eigen/Geometry>
 #include <polyscope/polyscope.h>
 #include <polyscope/surface_mesh.h>
-#include <matplot/matplot.h>
 #include "off_cleaning/off_cleaning.h"
 #include "mesh.hpp"
 
@@ -20,7 +19,6 @@ std::unique_ptr<mesh> md;
 std::unique_ptr<mesh> md_cleaned;
 
 using Smesh = polyscope::SurfaceMesh;
-namespace plt = matplot;
 
 Smesh* mesh_original_ps; // handle
 Smesh* mesh_cleaned_ps; // handle
@@ -50,7 +48,7 @@ int main(int argc, char** argv) {
 
   std::string path = argv[1];
   std::string output_metrics_file = argv[2];
-
+  
   // Load mesh
   md = std::make_unique<mesh>(path, output_metrics_file);
 
