@@ -1,1 +1,1 @@
-call .\build\Debug\off_viewer.exe ..\Meshes\TRUCK\MiLo\milo_verylowres.ply
+call .\build\Debug\off_viewer.exe ..\Meshes\bunny.obj

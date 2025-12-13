@@ -4,6 +4,7 @@
 #include <Eigen/Geometry>
 #include <polyscope/polyscope.h>
 #include <polyscope/surface_mesh.h>
+#include <matplot/matplot.h>
 #include "off_cleaning/off_cleaning.h"
 #include "mesh.hpp"
 
@@ -13,11 +14,13 @@
 #include <vector>
 #include <iostream>
 #include <stdexcept>
+#include <filesystem>
 
 std::unique_ptr<mesh> md;
 std::unique_ptr<mesh> md_cleaned;
 
 using Smesh = polyscope::SurfaceMesh;
+namespace plt = matplot;
 
 Smesh* mesh_original_ps; // handle
 Smesh* mesh_cleaned_ps; // handle
@@ -40,15 +43,16 @@ void myUICallback()
 
 //=============================== main =============================//
 int main(int argc, char** argv) {
-  if (argc < 2) {
-    std::cerr << "Usage:\n  " << argv[0] << " <mesh.off>\n";
+  if (argc < 3) {
+    std::cerr << "Usage:\n  " << argv[0] << " <mesh.off> <output_metrics_file>\n";
     return 1;
   }
 
   std::string path = argv[1];
+  std::string output_metrics_file = argv[2];
 
   // Load mesh
-  md = std::make_unique<mesh>(path);
+  md = std::make_unique<mesh>(path, output_metrics_file);
 
   //polyscope::init();
 
@@ -71,6 +75,10 @@ int main(int argc, char** argv) {
 
   //polyscope::view::resetCameraToHomeView();
   //polyscope::show();
+
+  // MATPLOT++ wellness plot example
+
+  // CREATE OUTPUT DIR matplot_output IF NOT EXISTS
 
   return 0;
 }

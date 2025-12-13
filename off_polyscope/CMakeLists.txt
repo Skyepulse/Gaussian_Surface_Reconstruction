@@ -29,6 +29,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(polyscope)
 
+# MatPlot++
+FetchContent_Declare(
+  matplotplusplus
+  GIT_REPOSITORY https://github.com/alandefreitas/matplotplusplus
+  GIT_TAG origin/master
+)
+FetchContent_MakeAvailable(matplotplusplus)
+
 set(SRC_FILES
   src/main.cpp
   src/off_cleaning/off_cleaning.cpp
@@ -55,6 +63,7 @@ target_link_libraries(off_viewer
     polyscope
     igl::core
     igl::stb
+    matplot
 )
 
 # GoogleTest

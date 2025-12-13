@@ -82,7 +82,7 @@ public:
 
     std::vector<float> face_angles;
     
-    mesh(const std::string& path);
+    mesh(const std::string& path, const std::string& output_metrics_file);
     mesh() = default;
     ~mesh();
 
@@ -103,6 +103,7 @@ public:
 
     void getMetrics(MeshMetrics& out_metrics) const { out_metrics = metrics; }
     std::string file_path;
+    std::string output_metrics_file;
 };
 
 #endif // MESH_H

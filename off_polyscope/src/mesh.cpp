@@ -10,20 +10,24 @@
 #include <igl/facet_components.h>
 #include <cfloat>
 
+#include <filesystem>
+
 #define PIV 3.141592653589793
 
 using namespace std;
 typedef Eigen::Triplet<double> Trip;
 
 //================================//
-mesh::mesh(const std::string& path) : file_path(path)
+mesh::mesh(const std::string& path, const std::string& output_metrics_file) : file_path(path), output_metrics_file(output_metrics_file)
 {
     cout << "[MESH] Loading mesh from file: " << file_path << endl;
     loadFromFile();
+    cout << "[MESH] Mesh loaded. Vertices: " << V.rows() << ", Faces: " << F.rows() << endl;
     initializeMeshParts();
     buildHalfEdgeStructure();
-    this->computeAreaMatrix();
-    this->computeCotangentMatrix();
+    cout << "[MESH] Mesh parts initialized." << endl;
+    //this->computeAreaMatrix();
+    //this->computeCotangentMatrix();
     buildMetrics();
     cout << "[MESH] Mesh metrics computed." << endl;
 }
@@ -450,6 +454,10 @@ void mesh::computeCotangentMatrix()
 //================================//
 void mesh::buildMetrics()
 {
+    // Create folder given output_metrics_file path
+    std::filesystem::path output_path(output_metrics_file);
+    std::filesystem::create_directories(output_path.parent_path());
+
     Eigen::MatrixXi E;
     Eigen::VectorXi EMAP;
 
