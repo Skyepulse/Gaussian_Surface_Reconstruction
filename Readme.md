@@ -1,4 +1,29 @@
 # Splatting Methods for Surface Reconstruction
+## Code structure
+The repository contains: 
+- `Illustrations`, holding the illustrations used in the LateX file.
+- `data`, which holds the colmaps we have trained on, 
+  - `lego(original)`
+  - `lego_colmap_small`, is a subset of `new_lego_colmap`
+  - `walle_blender_colmap`
+- `home_made_data` contains a video of an example we tried and the derived colmap we computed using our scripts, is also a colmap dataset
+- `Meshes`, contains all meshes output for each pipeline, they are separated into `TRUCK` and `WALLE` depending on the dataset used to get them. The `WALLE` folder also contains the original Ground Truth model.
+- `Metrics`, this contains the outputs of running the `Compute_metrics.sh` on the Meshes folder for a specific dataset. It contains the metrics for each mesh, the per mesh plots, global plots and in case of normals given, normal map difference pngs and plots.
+- `off polyscope` for mesh visualition and metrics. This contains the entire source code for our c++ application which loads the meshes, creates the half edge structure and runs the metrics computation for it.
+- `scripts` contains python scripts for image and data processing
+  - `colmap_bin.py` converts txt files to bin in a valid colmap dataset, we use it mainly to generate the .bin files after running create_blender_colmap_dataset.py.
+  - `convert.py` Adapted from the original inria gaussian splatting codebase, converts a folder of images into a colmap dataset of images, it uses feature extraction and matching to estimate camera poses.
+  - `process_videos.ipynb` converts a video into an image dataset keeping the least blurry images, writes into `home_made_data`
+  - `create_blender_dataset_colmap.py` we wrote this script to be ran inside blender's scripting environment. Will render camera view images for any mesh you wish in the scene, and it will save the camera intrinsics and positions into a colmap format. It also generates a 3D point cloud to better initialize the training of the gaussian splats.
+  - `sort_pictures.ipynb` sorts pictures into clusters and prunes a colmap dataset into a smaller one
+  - `render_normal_maps` we wrote this script to generate the normal map views (colored RGB) for N meshes already aligned, in order to later compute the differences between them and estimate which mesh is closer to the GT.
+  - `output_metrics.py` this script is to be ran after the generation of the metrics by our C++ code as text files. It is called automatically at the end of Compute_metrics.sh or .bat. It generates the plots with matplotlib and normal map differences with opencv.
+- `requirements.txt`: these are the requirements for python to be able to run output_metrics.py. Namely numpy, opencv and matplotlib.
+- `Blender files`: these blender files contain, the comparison of the output meshes for the TRUCK lego dataset (in `Comparison.blend`), the same for the WALLE dataset (`Comparison_walle.blend`) and the file used to render the dataset for WALLE (`render.blend`).
+- `Compute_metrics.sh` or it's .bat equivalent, launches the metrics pipeline on a folder containing all computed meshes. It will call our C++ code and then the python script to generate the plots and images as a result. THIS IS THE MAIN SCRIPT TO RUN.
+
+We also provided as submodules the 4 original github repositories for each method: milo, sugar, triangle splatting and triangle splatting 2.
+
 ## The four methods
 https://trianglesplatting.github.io/ triangle splatting
 https://trianglesplatting2.github.io/ triangle-splatting+ , improvement on triangle splatting
@@ -68,19 +93,3 @@ Problem is using points on the corect level set : use the depth maps. For every 
 Bind gaussians to mesh triangle and optimize mesh and gaussians together : mesh editable, gaussians provide good rendering. One gaussian per triangle. Reduces the learnable parameters on the gaussians, lose one axis of rotation to keep them flat on the surgace.
 ### MILo
 Milo runs mesh in the loop optimization. At every step, they extract the mesh and enforce consistency, resulting in fewer vertices than other methods. This method introduces Gaussian Pivots, a set of points derived from the gaussians. The training iteration follow five steps : computing the trainable Delaunay vertices derived from the gaussian pivots; updating the Delaunay triangulation; computing the signed distance values for the vertices; apply marching terahedra to obtain the mesh; and lastly back-propagate losses based on both the gaussians and the extracted mesh to the gaussian parameters.
-
-## Metrics
-## Code structure
-The repository contains: 
-- `data`, which holds the colmaps we have trained on, 
-  - `lego(original)`
-  - `lego_colmap_small`, is a subset of `new_lego_colmap`
-  - `walle_blender_colmap`
-- `home_made_data` contains a video of an example we tried and the derived colmap we computed using our scripts, is also a colmap dataset
-- `off polyscope` for mesh visualition and metrics`
-- `scripts` contains python scripts for image and data processing
-  - `colmap_bin.py` converts txt files to bin
-  - `convert.py` converts a folder of images into a colmap dataset of images, adapted from INRIA's colmap_converter.py
-  - `process_videos.ipynb` converts a video into an image dataset keeping the least blurry images, writes into `home_made_data`
-  - `renderBlender.py`
-  - `sort_pictures.ipynb` sorts pictures into clusters and prunes a colmap dataset into a smaller one
