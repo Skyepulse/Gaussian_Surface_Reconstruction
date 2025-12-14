@@ -333,6 +333,7 @@ if avg_errors:
     ax.set_ylabel("Average Normal Error (L2 norm)")
     ax.set_title("Average Normal Map Errors Compared to Ground Truth")
     ax.set_ylim(0, 1)
+    ax.set_yticks(np.arange(0.0, 1.0001, 0.05))
     plt.xticks(rotation=20)
     plt.tight_layout()
     plt.savefig(os.path.join(global_dir, "average_normal_errors.png"))
