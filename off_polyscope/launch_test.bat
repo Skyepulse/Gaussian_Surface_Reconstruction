@@ -1,1 +1,0 @@
-call .\build\Debug\unit_tests.exe ..\Meshes\TRUCK\MiLo\milo_verylowres.ply

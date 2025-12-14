@@ -85,9 +85,23 @@ for sub in milo sugar triangle triangle_2; do
 
         output_metrics_folder="$Output_Folder/$sub/${name_no_ext}_metrics"
 
+        # Check if the output folder exists, if yes we skip this mesh
+        if [ -d "$output_metrics_folder" ]; then
+            echo "Skipping \"$mesh_file\" as metrics folder \"$output_metrics_folder\" already exists."
+            continue
+        fi
+
         echo "Processing \"$mesh_file\"..."
         "$EXEC" "$mesh_file" "$output_metrics_folder"
     done
 done
 
 echo "All metrics computed and saved in \"$Output_Folder\"."
+echo "Now running python script to generate plots..."
+
+# -----------------------------
+# script is in scripts/output_metrics.py.
+# -----------------------------
+python3 scripts/output_metrics.py --input_path "$Output_Folder"
+
+echo "Plots generated successfully. Everything contained in Metrics\"$Output_Folder\"."

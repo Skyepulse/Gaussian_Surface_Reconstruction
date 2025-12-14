@@ -75,9 +75,25 @@ FOR %%S IN (milo sugar triangle triangle_2) DO (
             CONTINUE
         )
 
-        ECHO Processing "%%F"...
-        CALL .\off_polyscope\build\Debug\off_viewer.exe "%%F" "%Output_Metrics_Folder%"
+        REM Skip if metrics folder already exists
+        IF EXIST "!OutputMetricsFolder!" (
+            ECHO Skipping "%%F" as metrics folder "!OutputMetricsFolder!" already exists.
+        ) ELSE (
+            ECHO Processing "%%F"...
+            CALL "%EXEC%" "%%F" "!OutputMetricsFolder!"
+        )
     )
 )
 
 ECHO All metrics computed and saved in "%Output_Folder%".
+ECHO Now running python script to generate plots...
+
+ython scripts\output_metrics.py --input_path "%Output_Folder%"
+
+IF ERRORLEVEL 1 (
+    ECHO Error while running output_metrics.py
+    EXIT /B 1
+)
+
+ECHO Plots generated successfully. Everything contained in Metrics"%Output_Folder%".
+ENDLOCAL

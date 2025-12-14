@@ -1,1 +1,0 @@
-call .\build\Debug\off_viewer.exe ..\Meshes\bunny.obj

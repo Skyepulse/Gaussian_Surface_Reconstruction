@@ -1,7 +1,12 @@
+# This script reads mesh metrics from text files, generates per-mesh diagnostic plots,
+# and creates global comparison plots across multiple meshes. You must giwe as input
+# the directory containing subdirectories for each mesh, each with a single .txt file which should normally be metrics.txt.
+
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 from argparse import ArgumentParser
+import cv2
 
 parser = ArgumentParser("Output metrics visualization")
 parser.add_argument("--input_path", "-i", required=True, type=str)
@@ -111,17 +116,10 @@ for directory in directories:
         mesh_names.append(subdir[:-8] if subdir.endswith("_metrics") else subdir)
         num_meshes_processed += 1
 
-# =========================
-# Plotting utilities
-# =========================
-
 def safe_get(metrics, key, default=0):
     return metrics[key] if key in metrics else default
 
-# =========================
-# Per-mesh plots
-# =========================
-
+# per mesh plkts first
 per_mesh_dir = os.path.join(output_path, "per_mesh")
 os.makedirs(per_mesh_dir, exist_ok=True)
 
@@ -144,7 +142,7 @@ for i, metrics in enumerate(all_metrics):
     else:
         axes[0].text(0.5, 0.5, "No boundary loops", ha='center')
 
-    # Connected component sizes (ECDF)
+    # Connected component sizes (ECDF) (we tried with histogram but it was not very informative, and was unreadable on log scale)
     comp_sizes = safe_get(metrics, 'boundary loops distribution:', [])
     if comp_sizes:
         sizes = np.sort(np.array(comp_sizes))
@@ -162,10 +160,7 @@ for i, metrics in enumerate(all_metrics):
     plt.savefig(os.path.join(per_mesh_dir, f"{mesh_names[i]}_diagnostics.png"))
     plt.close(fig)
 
-# =========================
-# Global comparison plots
-# =========================
-
+# Now global comparison plots
 global_dir = os.path.join(output_path, "global")
 os.makedirs(global_dir, exist_ok=True)
 
@@ -267,3 +262,78 @@ ax_d.legend()
 plt.tight_layout()
 plt.savefig(os.path.join(global_dir, "mesh_comparison.png"))
 plt.close(fig)
+
+# Now we check if we find a "normals" directory inside the main one, if yes we fetch the 
+# subdirectory GT and compare each of the other subdirectories to it, to get per image normal errors.
+GT_images = []
+Other_images = {}
+normals_dir = os.path.join(input_path, "normals")
+if os.path.exists(normals_dir):
+    # fetch the ground truthj images
+    gt_dir = os.path.join(normals_dir, "GT")
+    if os.path.exists(gt_dir):
+        normal_error_dir = os.path.join(output_path, "normal_errors")
+        os.makedirs(normal_error_dir, exist_ok=True)
+
+        # save gt images paths
+        GT_images = [f for f in os.listdir(gt_dir) if f.endswith('.png')]
+        sub_directories = [
+            d for d in os.listdir(normals_dir)
+            if os.path.isdir(os.path.join(normals_dir, d))
+        ]
+        for directory in sub_directories:
+            if directory == "GT":
+                continue
+            # A new mesh to compare to GT
+            dir_path = os.path.join(normals_dir, directory)
+            if not os.path.exists(dir_path):
+                continue
+
+            Other_images[directory] = [f for f in os.listdir(dir_path) if f.endswith('.png')]
+            error_subdir = os.path.join(normal_error_dir, directory)
+            os.makedirs(error_subdir, exist_ok=True)
+
+# Now we can compute the normal errors, we can output them as images and also compute average errors per mesh
+avg_errors = {}
+num_images = len(GT_images)
+for mesh_name in Other_images.keys():
+    other_imgs = Other_images[mesh_name]
+    mesh_error_dir = os.path.join(normal_error_dir, mesh_name)
+    total_error = 0.0
+
+    for img_name in GT_images:
+        if img_name not in other_imgs:
+            print(f"Image {img_name} not found in {mesh_name}, skipping.")
+            continue
+
+        gt_img_path = os.path.join(normals_dir, "GT", img_name)
+        other_img_path = os.path.join(normals_dir, mesh_name, img_name)
+
+        gt_img = cv2.imread(gt_img_path).astype(np.float32) / 255.0
+        other_img = cv2.imread(other_img_path).astype(np.float32) / 255.0
+
+        # Compute per-pixel normal error (L2 norm)
+        error_img = np.linalg.norm(gt_img - other_img, axis=2)
+        total_error += np.mean(error_img)
+
+        # Save error image (scaled for visibility)
+        error_img_vis = (error_img / np.max(error_img) * 255).astype(np.uint8)
+        cv2.imwrite(os.path.join(mesh_error_dir, f"error_{img_name}"), error_img_vis)
+
+    avg_error = total_error / num_images if num_images > 0 else 0
+    avg_errors[mesh_name] = avg_error
+
+# Now we plot a new global plot TO SAVE IN THE global directory, with the average normal errors, between 0 and 1 ofcs
+if avg_errors:
+    fig, ax = plt.subplots(figsize=(8, 6))
+    mesh_names_list = list(avg_errors.keys())
+    avg_error_values = [avg_errors[name] for name in mesh_names_list]
+
+    ax.bar(mesh_names_list, avg_error_values, color='skyblue')
+    ax.set_ylabel("Average Normal Error (L2 norm)")
+    ax.set_title("Average Normal Map Errors Compared to Ground Truth")
+    ax.set_ylim(0, 1)
+    plt.xticks(rotation=20)
+    plt.tight_layout()
+    plt.savefig(os.path.join(global_dir, "average_normal_errors.png"))
+    plt.close(fig)

@@ -247,7 +247,7 @@ void mesh::initializeMeshParts()
 
     this->metrics.average_face_area /= static_cast<double>(k);
     
-    double threshold_area = 1e-6 * this->metrics.average_face_area;
+    double threshold_area = 1e-4 * this->metrics.average_face_area;
     metrics.num_degenerate_faces = 0;
     for (const auto& face_ptr : this->primal_faces)
     {
