@@ -89,4 +89,4 @@ The repository contains:
 All the pipelines side by side on Walle:
 ![alt text](Illustrations/Walle_Comparisons.png)
 Best results from triangle splat on our home data : 
-![alt text](Illustrations/triangle_splat_home_data.gif)
+![alt text](Illustrations/home_gif.gif)
