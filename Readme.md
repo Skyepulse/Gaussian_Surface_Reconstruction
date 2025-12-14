@@ -84,3 +84,9 @@ The repository contains:
   - `process_videos.ipynb` converts a video into an image dataset keeping the least blurry images, writes into `home_made_data`
   - `renderBlender.py`
   - `sort_pictures.ipynb` sorts pictures into clusters and prunes a colmap dataset into a smaller one
+  
+## A couple of results
+All the pipelines side by side on Walle:
+![alt text](Illustrations/Walle_Comparisons.png)
+Best results from triangle splat on our home data : 
+![alt text](Illustrations/triangle_splat_home_data.gif)
