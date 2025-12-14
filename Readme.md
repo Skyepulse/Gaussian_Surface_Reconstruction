@@ -28,6 +28,8 @@ Adding triangles by a midpoint subdivision, making one triangle into 4 more, unl
 Dataset : images, camera parameters (calibrated via SfM) --> produces a sparse point cloud, and xcreate triangle for each 3D point in that cloud.
 Optimize the parameters of all triangles by minimizing rendering error from POVs.
 
+#### Triangle splatting +
+This improvement on the first paper computes a triangulation before training and provides a semi connected mesh. It optimizes in a similar way as the previous paper but prunes more noise.
 
 ### SuGaR
 Mesh extraction from 3D gaussian splatting
