@@ -65,6 +65,20 @@ Problem is using points on the corect level set : use the depth maps. For every 
 
 Bind gaussians to mesh triangle and optimize mesh and gaussians together : mesh editable, gaussians provide good rendering. One gaussian per triangle. Reduces the learnable parameters on the gaussians, lose one axis of rotation to keep them flat on the surgace.
 ### MILo
-
+Milo runs mesh in the loop optimization. At every step, they extract the mesh and enforce consistency, resulting in fewer vertices than other methods. This method introduces Gaussian Pivots, a set of points derived from the gaussians. The training iteration follow five steps : computing the trainable Delaunay vertices derived from the gaussian pivots; updating the Delaunay triangulation; computing the signed distance values for the vertices; apply marching terahedra to obtain the mesh; and lastly back-propagate losses based on both the gaussians and the extracted mesh to the gaussian parameters.
 
 ## Metrics
+## Code structure
+The repository contains: 
+- `data`, which holds the colmaps we have trained on, 
+  - `lego(original)`
+  - `lego_colmap_small`, is a subset of `new_lego_colmap`
+  - `walle_blender_colmap`
+- `home_made_data` contains a video of an example we tried and the derived colmap we computed using our scripts, is also a colmap dataset
+- `off polyscope` for mesh visualition and metrics`
+- `scripts` contains python scripts for image and data processing
+  - `colmap_bin.py` converts txt files to bin
+  - `convert.py` converts a folder of images into a colmap dataset of images, adapted from INRIA's colmap_converter.py
+  - `process_videos.ipynb` converts a video into an image dataset keeping the least blurry images, writes into `home_made_data`
+  - `renderBlender.py`
+  - `sort_pictures.ipynb` sorts pictures into clusters and prunes a colmap dataset into a smaller one
