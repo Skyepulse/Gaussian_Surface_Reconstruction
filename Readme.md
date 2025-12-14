@@ -24,6 +24,8 @@ The repository contains:
 
 We also provided as submodules the 4 original github repositories for each method: milo, sugar, triangle splatting and triangle splatting 2.
 
+## IMPORTANT REMARK: if you would like to run the gaussian splatting pipelines yourself, you need to pull them using git clone --recursive and then follow the specific instructions provided in THEIR Readme.md. It is very painful to correctly initialize environments for each of them, so it is not easy to automate everything with a single comment or pushing in github our environments...
+
 ## The four methods
 https://trianglesplatting.github.io/ triangle splatting
 https://trianglesplatting2.github.io/ triangle-splatting+ , improvement on triangle splatting
