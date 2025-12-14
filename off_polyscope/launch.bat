@@ -1,1 +1,1 @@
-call .\build\Debug\off_viewer.exe ..\Meshes\MiLo\mesh_learnable_sdf.ply
+call .\build\Debug\off_viewer.exe ..\Meshes\bunny.obj
