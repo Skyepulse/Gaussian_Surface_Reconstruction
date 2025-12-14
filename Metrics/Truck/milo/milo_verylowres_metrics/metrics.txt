@@ -245,7 +245,7 @@ COMPONENT SIZES:
   Minimum face area: 0
   Maximum face area: 0.726333
   Average face area: 0.000172442
-  Number of degenerate faces: 2413
-  Area degeneracy ratio: 0.00273936
+  Number of degenerate faces: 17964
+  Area degeneracy ratio: 0.0203936
   5th percentile minimum angle: 6.46486
   Maximum angle: 180
