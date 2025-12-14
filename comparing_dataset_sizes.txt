@@ -1,0 +1,5 @@
+temporary file for results
+
+triangle splatting 1 : 
+150 images from video 
+train time : begin 16:35 - 16:49 
