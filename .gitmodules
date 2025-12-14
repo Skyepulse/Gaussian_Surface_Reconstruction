@@ -4,3 +4,6 @@
 [submodule "SuGaR"]
 	path = SuGaR
 	url = https://github.com/Anttwo/SuGaR.git
+[submodule "triangle-splatting"]
+	path = triangle-splatting
+	url = https://github.com/trianglesplatting/triangle-splatting.git
