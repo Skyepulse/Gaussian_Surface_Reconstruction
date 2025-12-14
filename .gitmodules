@@ -7,3 +7,6 @@
 [submodule "triangle-splatting"]
 	path = triangle-splatting
 	url = https://github.com/trianglesplatting/triangle-splatting.git
+[submodule "triangle-splatting2"]
+	path = triangle-splatting2
+	url = https://github.com/trianglesplatting2/triangle-splatting2.git
